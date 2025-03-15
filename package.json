@@ -25,6 +25,7 @@
 		"passport": "^0.7.0"
 	},
 	"devDependencies": {
+		"@types/mongoose": "^5.11.96",
 		"nodemon": "^3.1.9"
 	}
 }
