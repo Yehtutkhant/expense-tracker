@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 // auth libraries
 import session from "express-session";
-import connetMongo from "connect-mongodb-session";
+import connectMongo from "connect-mongodb-session";
 import passport from "passport";
 
 // Graphql Apollo libraries
@@ -30,12 +30,12 @@ const httpServer = http.createServer(app);
 
 // session and mongo session setup
 
-const MongoDBStore = connetMongo(session);
+const MongoDBStore = connectMongo(session);
 const store = new MongoDBStore({
 	uri: process.env.MONGODB_URI,
 	collection: "sessions",
 });
-store.on("error", () => {
+store.on("error", (err) => {
 	console.log("MongoDB session store error!");
 });
 
@@ -83,4 +83,4 @@ app.use(
 await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
 await connectDB();
 
-console.log(`🚀 Server ready at http://localhost:4000/`);
+console.log(`🚀 Server ready at http://localhost:4000/graphql`);

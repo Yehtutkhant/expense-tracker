@@ -5,10 +5,19 @@ import Cards from "../components/ui/Cards";
 import TransactionForm from "../components/ui/TransactionForm";
 
 import { MdLogout } from "react-icons/md";
+import { useMutation, useQuery } from "@apollo/client";
+import { LOGOUT } from "../graphql/mutations/user.mutation";
+import { GET_AUTH_USER } from "../graphql/queries/user.query";
+import toast from "react-hot-toast";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const HomePage = () => {
+	const [logout] = useMutation(LOGOUT, {
+		refetchQueries: [GET_AUTH_USER],
+	});
+
+	const { data: authUser } = useQuery(GET_AUTH_USER);
 	const chartData = {
 		labels: ["Saving", "Expense", "Investment"],
 		datasets: [
@@ -33,8 +42,14 @@ const HomePage = () => {
 		],
 	};
 
-	const handleLogout = () => {
-		console.log("Logging out...");
+	const handleLogout = async () => {
+		try {
+			const { message } = await logout();
+			toast.success(message);
+		} catch (err) {
+			console.error(err);
+			toast.error(err.message);
+		}
 	};
 
 	const loading = false;
@@ -47,7 +62,7 @@ const HomePage = () => {
 						Spend wisely, track wisely
 					</p>
 					<img
-						src={"https://tecdn.b-cdn.net/img/new/avatars/2.webp"}
+						src={authUser?.authUser.profilePicture}
 						className="w-11 h-11 rounded-full border cursor-pointer"
 						alt="Avatar"
 					/>

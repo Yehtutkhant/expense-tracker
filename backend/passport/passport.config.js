@@ -5,12 +5,18 @@ import bcrypt from "bcryptjs";
 
 export const passportConfig = () => {
 	passport.serializeUser((user, done) => {
-		done(null, user.id);
+		console.log("Serializing user");
+		done(null, user._id);
 	});
-	passport.deserializeUser((id, done) => {
-		User.findById(id, (err, user) => {
-			done(err, user);
-		});
+	passport.deserializeUser(async (id, done) => {
+		console.log("Deserializing user");
+		try {
+			const user = await User.findById(id);
+			done(null, user);
+		} catch (err) {
+			console.error(err);
+			done(err, null);
+		}
 	});
 	passport.use(
 		new GraphQLLocalStrategy(async (username, password, done) => {
@@ -19,7 +25,7 @@ export const passportConfig = () => {
 				if (!user) {
 					throw new Error("Invalid username");
 				}
-				const isValidPassword = bcrypt.compare(password, user.password);
+				const isValidPassword = await bcrypt.compare(password, user.password);
 				if (!isValidPassword) {
 					throw new Error("Invalid password");
 				}

@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-
+import bcrypt from "bcryptjs";
 const userResolver = {
 	Query: {
 		authUser: async (_, __, context) => {
@@ -47,12 +47,12 @@ const userResolver = {
 					name,
 					password: hashedPassword,
 					gender,
-					profile: gender === "male" ? boyProfilePic : girlProfilePic,
+					profilePicture: gender === "male" ? boyProfilePic : girlProfilePic,
 				});
 
 				await newUser.save();
 				await context.login(newUser);
-				return newUser;
+				return await context.getUser();
 			} catch (err) {
 				console.error("Error in signUp resolver: ", err);
 				throw new Error(err.message);
@@ -64,12 +64,14 @@ const userResolver = {
 				if (!username || !password) {
 					throw new Error("All fields are required");
 				}
-				const user = await context.authenticate("graphql-local", {
+				const authUser = await context.authenticate("graphql-local", {
 					username,
 					password,
 				});
-				await context.login(user);
-				return user;
+
+				await context.login(authUser.user);
+
+				return authUser.user;
 			} catch (err) {
 				console.error("Error in login resolver: ", err);
 				throw new Error(err.message);
@@ -78,7 +80,7 @@ const userResolver = {
 		logout: async (_, __, context) => {
 			try {
 				await context.logout();
-				context.req.session.destory((err) => {
+				context.req.session.destroy((err) => {
 					if (err) throw err;
 				});
 				context.res.clearCookie("connect.sid");
